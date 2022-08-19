@@ -24,7 +24,7 @@ export class FileUploader{
   element: HTMLElement
   uploadUrl: string
   taskRenderer: (arg: Task) => string | Node
-  tasks: any[]
+  tasks: any[] = []
 
   constructor({
     element,
@@ -83,7 +83,6 @@ export class FileUploader{
   #upload = (file: File) => {
     const data = new FormData()
     data.append('file', file)
-    return
     const task: Task = {
       id: this.tasks.length,
       name: file.name,
