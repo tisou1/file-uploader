@@ -27,6 +27,7 @@ body {
   border: 6px dashed #bfbfbf;
   border-radius: 16px;
   user-select: none;
+  cursor: pointer;
 }
 
 .upload-icon {

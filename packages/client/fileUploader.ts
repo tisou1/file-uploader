@@ -46,8 +46,33 @@ export class FileUploader{
     this.#listenToEvents()
   }
 
-  #listenToEvents = () => {
+  #listenToEvents =  () => {
     const dropAreaDOM = this.element.querySelector('.drop-area')
+
+    //点击上传
+    dropAreaDOM?.addEventListener('click', async () => {
+      /**
+       * multiple: boolean  默认false, 表示只能选择一个文件
+       * excludeAcceptAllOption 布尔值，默认值是 false ，表示是否排除下面 types 中的所有的accept文件类型。
+       * types
+       *  可选择的文件类型数组，每个数组项也是个对象，支持下面两个参数：
+            description：表示文件或者文件夹的描述，字符串，可选。
+            accept：接受的文件类型，对象，然后对象的键是文件的MIME匹配，值是数组，表示支持的文件后缀。具体可以下面的示意。
+       */
+      const files = await window.showOpenFilePicker()
+      for(const fileHandle of files) {
+        //获取文件内容
+        const fileData = await fileHandle.getFile() ////File类型
+
+        this.#upload(fileData)
+
+        // //读取文件数据
+        // const buffer = await fileData.arrayBuffer()
+        // //转成Blob url地址
+        // let src = URL.createObjectURL(new Blob([buffer]))
+      }
+    })
+
     //drop当一个元素或是选中的文字被拖拽释放到一个有效的释放目标位置时，drop 事件被抛出。
     dropAreaDOM?.addEventListener('drop', this.#handleDrop)
     //dragover 放下目标节点时
@@ -96,6 +121,7 @@ export class FileUploader{
     xhr.setRequestHeader('x-file-name', encodeURIComponent(file.name))
     //上传中
     xhr.upload.addEventListener('progress', (e) => {
+      //已上传文件大小 和 总计大小
       const { loaded, total } = e
       const progress = Math.round(loaded / total * 100)
       task.progress = progress
