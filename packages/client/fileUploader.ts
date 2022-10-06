@@ -79,8 +79,9 @@ export class FileUploader{
     dropAreaDOM?.addEventListener('dragover', this.#handleDragover)
   }
 
+  //拖拽事件回调
   #handleDrop = (e: any) => {
-    //组织默认行为
+    //阻止默认行为
     e.preventDefault()
 
     if(e.dataTransfer!.items) {
