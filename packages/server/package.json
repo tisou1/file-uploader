@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^18.7.6",
+    "dotenv": "^16.3.1",
     "fast-glob": "^3.2.11"
   },
   "dependencies": {

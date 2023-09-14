@@ -2,10 +2,21 @@ const path = require('path')
 const express = require('express')
 const cors = require('cors')
 const multer = require('multer')
+const config = require('dotenv').config()
+const fs = require('fs')
 
 const app = express()
-const PORT = 3000
-const uploadsPath = path.resolve(__dirname, './uploads')
+const PORT = process.env.PORT || 3000
+const directoryPath = './uploads'
+
+// 如果uploads目录不存在,就创建
+if(!fs.existsSync(directoryPath)) {
+  fs.mkdirSync(directoryPath)
+} else {
+  console.log('目录已存在')
+}
+
+const uploadsPath = path.resolve(__dirname, directoryPath)
 
 //进行文件存贮
 const storage = multer.diskStorage({
@@ -27,7 +38,7 @@ app.use(cors())
 app.post('/upload', upload.single('file'), (req,res) => {
   console.log('req', req.file)
   //相应值
-  res.json({url: `http://localhost:3000/uploads/${req.file.filename}`})
+  res.json({url: `http://localhost:${PORT}/uploads/${req.file.filename}`})
 })
 
 //上传成功后访问这个路径访问静态资源,也就是刚才上传的文件
