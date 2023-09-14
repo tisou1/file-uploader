@@ -4,8 +4,9 @@ const cors = require('cors')
 const multer = require('multer')
 const config = require('dotenv').config()
 const fs = require('fs')
-
 const app = express()
+const formidable = require('formidable');
+
 const PORT = process.env.PORT || 3000
 const directoryPath = './uploads'
 
@@ -30,16 +31,33 @@ const storage = multer.diskStorage({
   }
 })
 
-
 const upload = multer({storage})
 
 app.use(cors())
 
 app.post('/upload', upload.single('file'), (req,res) => {
-  console.log('req', req.file)
+  const filename = req.headers['x-file-name']
+  console.log('req', req.file, filename)
   //相应值
   res.json({url: `http://localhost:${PORT}/uploads/${req.file.filename}`})
 })
+
+// 测试大文件上传
+app.post('/upload2', (req, res, next) => {
+  const form = formidable.formidable({});
+  form.parse(req, (err, fields, files) => {
+    if (err) {
+      next(err);
+      return;
+    }
+    console.log(fields)
+
+    // res.json({ fields, files });
+  });
+  //相应值
+  res.json({url: `http://localhost:${PORT}/uploads`})
+})
+
 
 //上传成功后访问这个路径访问静态资源,也就是刚才上传的文件
 app.use('/uploads', express.static(uploadsPath))

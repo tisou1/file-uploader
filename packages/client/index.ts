@@ -25,4 +25,42 @@ new FileUploader({
   }
 })
 
+const input = document.querySelector('#input')!
+input.addEventListener('change', (e) => {
+  console.log(e.target.files[0])
+  const file = e.target.files[0];
+
+  const chunkSize = 1024 * 1024; // 1MB
+  const size = file.size
+  let start = 0;
+  let end = Math.min(start, size)
+  let count = 0
+  while(start < size) {
+    const chunk = file.slice(start, end)
+    const formdata = new FormData()
+    formdata.append('file', chunk)
+    formdata.append('hash', `${count}`)
+    formdata.append('filename', `文件-`)
+
+    const headers = new Headers();
+    headers.append('x-file-name', encodeURIComponent(`文件切片${count}`));
+
+    fetch('http://localhost:3334/upload2',{
+      method: 'post',
+      body: formdata,
+      headers: headers
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data)
+    })
+    .catch(e => {
+      console.log(e)
+    })  
+
+    start = end
+    end = Math.min(start + chunkSize, size)
+    count++
+  }
+})
 

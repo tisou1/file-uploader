@@ -25,6 +25,7 @@ export class FileUploader{
   uploadUrl: string
   taskRenderer: (arg: Task) => string | Node
   tasks: any[] = []
+  chunkSize = 1024 * 1024; // 1MB 切片大小
 
   constructor({
     element,
@@ -83,7 +84,6 @@ export class FileUploader{
   #handleDrop = (e: any) => {
     //阻止默认行为
     e.preventDefault()
-
     if(e.dataTransfer!.items) {
       //接收文件
       for(const item of e.dataTransfer.items) {
