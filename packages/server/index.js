@@ -84,11 +84,9 @@ app.post('/api/upload', (req, res, next) => {
     // 创建临时文件 用于保存chunk
     const chunkDir = path.resolve(directoryPath, 'chunkDir_' + fileName);
     if(!fs.existsSync(chunkDir)) {
-      console.log()
        fs.mkdirSync(chunkDir);
     }
     // 将二进制写入的临时目录下
-    console.log(typeof chunk)
     // 异步
     // await fsp.writeFile(`${chunkDir}/${fileName}-${hash}`, await fsp.readFile(chunk.filepath))
     // 同步
@@ -102,9 +100,9 @@ app.post('/api/merge', (req,res) => {
   console.log(req.body,"???")
   const fileName = req.body.fileName
   // 获取目录
-  const filePath = path.resolve(directoryPath, 'chunkDir_' + fileName)
+  // const filePath = path.resolve(directoryPath, 'chunkDir_' + fileName)
   
-  mergeFileChunk(filePath, fileName);
+  // mergeFileChunk(filePath, fileName);
 
   // 读取指定目录, 然后进行合并
   res.json({code: 0})
@@ -117,9 +115,36 @@ app.listen(PORT, () => {
 
 
 function mergeFileChunk(filePath, fileName) {
+  // todo
     console.log('fileath1:', filePath)
-    const files =  fs.readdirSync(filePath)
-    files.sort((a, b) => a.split("-").at(-1) - b.split("-").at(-1));
-    console.log("files:", files)
-    // 排序
+    setTimeout(() => {
+      const files =  fs.readdirSync(filePath)
+      files.sort((a, b) => a.split("-").at(-1) - b.split("-").at(-1));
+      console.log("files:", uploadsPath + '/' + fileName)
+
+      files.forEach((chunkpath) => {
+        // console.log(path.resolve(filePath, chunkpath),'>>>>>>>>>')
+        pipeStream(
+        path.resolve(filePath, chunkpath),
+        // 根据 size 在指定位置创建可写流
+          fs.createWriteStream(uploadsPath + '/' + fileName)
+        )
+      })
+    })
+}
+
+mergeFileChunk('/Users/v_wangtao34/t/file-uploader/packages/server/uploads/chunkDir_4.11 作业建模重构-训练作业 1206.pdf','4.11 作业建模重构-训练作业 1206.pdf')
+
+function pipeStream(path, writeStream) {
+  const readStream = fs.createReadStream(path)
+  readStream.on('end', () => {
+    // 删除已合并的切片文件（可选）
+    // fs.unlink(path, err=> {
+    //   if (err) {
+    //     console.error('删除切片文件失败:', err);
+    //   }
+    // })
+  })
+
+  readStream.pipe(writeStream)
 }
