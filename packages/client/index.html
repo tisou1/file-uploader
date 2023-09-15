@@ -31,6 +31,11 @@
     <input type="file" id="input"/>
   </div>
 
+  <form action="http://localhost:3334/api/upload" enctype="multipart/form-data" method="POST">
+    <input name="file" type="file" id="file">
+    <input type="submit" value="提交">
+  </form>
+
   <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
   <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
   <script src="./index.ts" type="module"></script>
