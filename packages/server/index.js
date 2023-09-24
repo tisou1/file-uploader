@@ -66,7 +66,6 @@ app.get('/', (req, res) => {
   `)
 })
 
-let isDown = false
 app.post('/api/upload', (req, res, next) => {
   const form = formidable({})
 
@@ -173,6 +172,9 @@ async function mergeFileChunkAsync(dirPath, fileName) {
     await fsp.appendFile(uploadsPath + '/' + fileName, data)
     await fsp.unlink(filePath) // 删除已合并的切片
   }
+
+  // 最后删除目录
+  // fsp.rmdir(dirPath)
   // files.forEach((chunkpath, index) => {
   //   pipeStream(
   //     path.resolve(filePath, chunkpath),
@@ -204,9 +206,9 @@ async function saveFileChunkAsync(files, fields) {
 
 async function directoryExists(path) {
   try {
-    await fsp.access(path, fs.constants.F_OK)
-    return true // 目录存在
+    const stats = await fsp.stat(path)
+    return stats.isDirectory() // 如果是目录，则返回 true
   } catch (err) {
-    return false // 目录不存在
+    return false // 目录不存在或发生错误
   }
 }
