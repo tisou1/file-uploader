@@ -25,12 +25,12 @@ new FileUploader({
 })
 
 const input = document.querySelector('#input')!
-input.addEventListener('change', e => {
+input.addEventListener('change', async (e) => {
   console.log(e.target.files[0])
   const file = e.target.files[0]
   const fileName = file.name
 
-  handleUpload(file)
+  await handleUpload(file)
 
   // merge
   fetch('http://localhost:3334/api/merge', {

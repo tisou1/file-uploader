@@ -79,9 +79,21 @@ app.post('/api/upload', (req, res, next) => {
 
     // 一步保存chunk
     // console.log(files, files)
-    await saveFileChunkAsync(files, fields)
+    const savePromises = []
+    for (const chunk of files.chunk) {
+      const savePromise = saveFileChunkAsync(files, fields);
+      savePromises.push(savePromise);
+    }
+    // await saveFileChunkAsync(files, fields)
 
-    res.json({ fields, files })
+    Promise.all(saveFileChunkAsync)
+      .then(() => {
+        res.json({ fields, files });
+      }).catch((error) => {
+        res.status(500).json({ error: '保存分片时出错' });
+      });
+
+    // res.json({ fields, files })
   })
 })
 
@@ -187,21 +199,27 @@ async function mergeFileChunkAsync(dirPath, fileName) {
 }
 
 async function saveFileChunkAsync(files, fields) {
-  const [chunk] = files.chunk
-  const [hash] = fields.hash
-  const [fileName] = fields.fileName
-  // 创建临时文件 用于保存chunk
-  const chunkDir = path.resolve(directoryPath, 'chunkDir_' + fileName)
-  if (!(await directoryExists(chunkDir))) {
-    const createDir = await fsp.mkdir(chunkDir)
-    console.log('dir:', createDir)
-  }
+  return new Promise(async (resolve, reject) => {
+    const [chunk] = files.chunk
+    const [hash] = fields.hash
+    const [fileName] = fields.fileName
+    // 创建临时文件 用于保存chunk
+    const chunkDir = path.resolve(directoryPath, 'chunkDir_' + fileName)
+    if (!(await directoryExists(chunkDir))) {
+      const createDir = await fsp.mkdir(chunkDir)
+      console.log('dir:', createDir)
+    }
 
-  // 异步保存
-  await fsp.writeFile(
-    `${chunkDir}/${fileName}-${hash}`,
-    await fsp.readFile(chunk.filepath)
-  )
+    // 异步保存
+    await fsp.writeFile(
+      `${chunkDir}/${fileName}-${hash}`,
+      await fsp.readFile(chunk.filepath)
+    ).then(res => {
+      resolve()
+    }).catch(err => {
+      reject(err)
+    })
+  })
 }
 
 async function directoryExists(path) {
