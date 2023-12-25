@@ -66,41 +66,30 @@ app.get('/', (req, res) => {
   `)
 })
 
-app.post('/api/upload', (req, res, next) => {
+app.post('/api/upload', async (req, res, next) => {
   const form = formidable({})
 
-  form.parse(req, async (err, fields, files) => {
+  form.parse(req, (err, fields, files) => {
     if (err) {
       next(err)
       return
     }
     // 同步保存chunk
     // saveFileChunkSync(fields)
+    console.log(fields, '>>>???')
+    // 异步保存chunk
 
-    // 一步保存chunk
-    // console.log(files, files)
-    const savePromises = []
-    for (const chunk of files.chunk) {
-      const savePromise = saveFileChunkAsync(files, fields);
-      savePromises.push(savePromise);
-    }
-    // await saveFileChunkAsync(files, fields)
-
-    Promise.all(saveFileChunkAsync)
-      .then(() => {
-        res.json({ fields, files });
-      }).catch((error) => {
-        res.status(500).json({ error: '保存分片时出错' });
-      });
-
-    // res.json({ fields, files })
+    saveFileChunkAsync(files, fields).then(ans => {
+      // fields, files,
+      res.json({ ...ans })
+    })
   })
 })
 
 app.post('/api/merge', async (req, res) => {
-  console.log(req.body, '???')
+  console.log(req.body, '??????')
   const fileName = req.body.fileName
-  // 获取目录
+  // // 获取目录
   const filePath = path.resolve(directoryPath, 'chunkDir_' + fileName)
 
   await mergeFileChunkAsync(filePath, fileName)
@@ -202,7 +191,7 @@ async function mergeFileChunkAsync(dirPath, fileName) {
 
 // 异步保存文件分片数据
 async function saveFileChunkAsync(files, fields) {
-  return new Promise(async (resolve, reject) => {
+  try {
     const [chunk] = files.chunk
     const [hash] = fields.hash
     const [fileName] = fields.fileName
@@ -218,12 +207,11 @@ async function saveFileChunkAsync(files, fields) {
       `${chunkDir}/${fileName}-${hash}`,
       await fsp.readFile(chunk.filepath)
       // TODO .then应该可以优化掉...
-    ).then(res => {
-      resolve()
-    }).catch(err => {
-      reject(err)
-    })
-  })
+    )
+    return { success: true, hash: fields.hash }
+  } catch (e) {
+    return { success: false, hash: fields.hash, error: e }
+  }
 }
 
 // 判断目录是否存在

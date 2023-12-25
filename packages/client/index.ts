@@ -25,14 +25,14 @@ new FileUploader({
 })
 
 const input = document.querySelector('#input')!
-input.addEventListener('change', async (e) => {
+input.addEventListener('change', async e => {
   console.log(e.target.files[0])
   const file = e.target.files[0]
   const fileName = file.name
 
-  await handleUpload(file)
+  let a = await handleUpload(file)
+  console.log(a, '响应')
 
-  // merge
   fetch('http://localhost:3334/api/merge', {
     method: 'post',
     body: JSON.stringify({ merge: true, fileName: fileName }),
@@ -49,7 +49,8 @@ input.addEventListener('change', async (e) => {
 async function handleUpload(file: File) {
   // 进行分片
   const fileChunkList = createFileChunk(file)
-  await uploadChunks(fileChunkList, file.name)
+  const res = await uploadChunks(fileChunkList, file.name)
+  return res
 }
 
 async function uploadChunks(fileChunkList, filename) {
@@ -62,22 +63,23 @@ async function uploadChunks(fileChunkList, filename) {
 
       return { formdata }
     })
-    .map(({ formdata }) => {
+    .map(({ formdata }) =>
       fetch('http://localhost:3334/api/upload', {
         method: 'post',
         body: formdata,
       })
         .then(response => response.json())
         .then(data => {
-          console.log(data)
+          return data
         })
         .catch(e => {
           console.log(e)
+          return e
         })
-    })
+    )
 
   // 并发请求
-  await Promise.all(requestList)
+  return await Promise.all(requestList)
 }
 
 function createFileChunk(file) {
