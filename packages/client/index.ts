@@ -26,31 +26,35 @@ new FileUploader({
 
 const input = document.querySelector('#input')!
 input.addEventListener('change', async e => {
-  console.log(e.target.files[0])
-  const file = e.target.files[0]
-  const fileName = file.name
+  try {
+    // console.log(e.target.files[0])
+    const file = e.target.files[0]
+    const fileName = file.name
 
-  let a = await handleUpload(file)
-  console.log(a, '响应')
+    let uploadChunksResponse = await handleUpload(file)
+    console.log('上传切片响应: ', uploadChunksResponse)
 
-  fetch('http://localhost:3334/api/merge', {
-    method: 'post',
-    body: JSON.stringify({ merge: true, fileName: fileName }),
-    headers: {
-      'Content-Type': 'application/json', // 设置请求的内容类型为JSON
-    },
-  })
-    .then(res => res.json())
-    .then(data => {
-      console.log(data)
+    // 等待切片上传完成, 每个切片都会等待后端保存之后才会给响应
+    fetch('http://localhost:3334/api/merge', {
+      method: 'post',
+      body: JSON.stringify({ merge: true, fileName: fileName }),
+      headers: {
+        'Content-Type': 'application/json', // 设置请求的内容类型为JSON
+      },
     })
+      .then(res => res.json())
+      .then(data => {
+        console.log(data)
+      })
+  } catch (e) {
+    console.log('出错了:', e)
+  }
 })
 
 async function handleUpload(file: File) {
   // 进行分片
   const fileChunkList = createFileChunk(file)
-  const res = await uploadChunks(fileChunkList, file.name)
-  return res
+  return await uploadChunks(fileChunkList, file.name)
 }
 
 async function uploadChunks(fileChunkList, filename) {
@@ -70,6 +74,7 @@ async function uploadChunks(fileChunkList, filename) {
       })
         .then(response => response.json())
         .then(data => {
+          // 单个上传的响应
           return data
         })
         .catch(e => {

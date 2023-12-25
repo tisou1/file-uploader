@@ -76,9 +76,8 @@ app.post('/api/upload', async (req, res, next) => {
     }
     // 同步保存chunk
     // saveFileChunkSync(fields)
-    console.log(fields, '>>>???')
-    // 异步保存chunk
 
+    // 异步保存chunk
     saveFileChunkAsync(files, fields).then(ans => {
       // fields, files,
       res.json({ ...ans })
@@ -174,6 +173,8 @@ async function mergeFileChunkAsync(dirPath, fileName) {
     const data = await fsp.readFile(filePath)
     await fsp.appendFile(uploadsPath + '/' + fileName, data)
     await fsp.unlink(filePath) // 删除已合并的切片
+    // 直接连目录都删除
+    // await fsp.rmdir(filePath)
   }
 
   // 最后删除目录
