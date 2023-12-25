@@ -154,6 +154,7 @@ function pipeStream(path, writeStream) {
   readStream.pipe(writeStream)
 }
 
+// 同步保存分片数据
 function saveFileChunkSync(files, fields) {
   const [chunk] = files.chunk
   const [hash] = fields.hash
@@ -173,6 +174,7 @@ function saveFileChunkSync(files, fields) {
   )
 }
 
+// 合并分片成数据
 async function mergeFileChunkAsync(dirPath, fileName) {
   const files = await fsp.readdir(dirPath)
   console.log('files:', files, dirPath, fileName)
@@ -198,6 +200,7 @@ async function mergeFileChunkAsync(dirPath, fileName) {
   // })
 }
 
+// 异步保存文件分片数据
 async function saveFileChunkAsync(files, fields) {
   return new Promise(async (resolve, reject) => {
     const [chunk] = files.chunk
@@ -214,6 +217,7 @@ async function saveFileChunkAsync(files, fields) {
     await fsp.writeFile(
       `${chunkDir}/${fileName}-${hash}`,
       await fsp.readFile(chunk.filepath)
+      // TODO .then应该可以优化掉...
     ).then(res => {
       resolve()
     }).catch(err => {
@@ -222,6 +226,7 @@ async function saveFileChunkAsync(files, fields) {
   })
 }
 
+// 判断目录是否存在
 async function directoryExists(path) {
   try {
     const stats = await fsp.stat(path)
